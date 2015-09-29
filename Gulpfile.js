@@ -1,83 +1,95 @@
-/**
- * Created by Meki on 2015.02.25..
- */
+/*jslint white: true */
 
-/* Get dependencies */
+// npm install --save-dev gulp gulp-plumber gulp-watch gulp-livereload gulp-minify-css gulp-jshint jshint-stylish gulp-uglify gulp-concat gulp-rename gulp-notify gulp-sourcemaps gulp-include gulp-sass gulp-imagemin imagemin-pngquant
+
 var gulp = require('gulp'),
-    sass = require('gulp-ruby-sass'),
-    minifycss = require('gulp-minify-css'),
-    jshint = require('gulp-jshint'),
-    uglify = require('gulp-uglify'),
+    plumber = require( 'gulp-plumber' ),
+    watch = require( 'gulp-watch' ),
+    livereload = require( 'gulp-livereload' ),
+    notify = require( 'gulp-notify' ),
+    include = require( 'gulp-include' ),
+    sass = require( 'gulp-sass' ),
+    minifycss = require( 'gulp-minify-css' ),
+    prefixer = require('gulp-autoprefixer'),
+    jshint = require( 'gulp-jshint' ),
+    stylish = require( 'jshint-stylish' ),
+    uglify = require( 'gulp-uglify' ),
+    rename = require( 'gulp-rename' ),
+    gp_concat = require( 'gulp-concat' ),
+    sourcemaps = require( 'gulp-sourcemaps' ),
     imagemin = require('gulp-imagemin'),
-    rename = require('gulp-rename'),
-    concat = require('gulp-concat'),
-    notify = require('gulp-notify'),
-    cache = require('gulp-cache'),
-    del = require('del');
+    pngquant = require('imagemin-pngquant');
+
+var onError = function( err ) {
+    console.log( 'An error occurred:', err.message );
+    //this.emit( 'end' );
+}
 
 /* Set paths */
 
 var paths = {
     /* Source paths */
-    styles: ['assets/sass/main.scss'],
+    styles: ['./assets/sass/*'],
     scripts: [
-        'assets/bower_components/jquery/dist/jquery.js',
-        'assets/bower_components/jquery.easing/js/jquery.easing.js',
-        'assets/bower_components/bootstrap/dist/js/bootstrap.js',
-        'assets/js/grayscale.js'
+        './assets/bower_components/jquery/dist/jquery.js',
+        './assets/bower_components/jquery.easing/js/jquery.easing.js',
+        './assets/bower_components/bootstrap/dist/js/bootstrap.js',
+        './assets/js/grayscale.js'
     ],
-    images: ['assets/images/**/*'],
+    images: ['./assets/images/**/*'],
     fonts: [
-        'assets/bower_components/bootstrap/fonts/*',
-        'assets/bower_components/font-awesome/fonts/*'
+        './assets/bower_components/bootstrap/fonts/*',
+        './assets/bower_components/font-awesome/fonts/*'
     ],
 
     /* Output paths */
-    stylesOutput: 'styles',
-    scriptsOutput: 'js',
-    imagesOutput: 'images',
-    fontsOutput: 'fonts'
+    stylesOutput: './css',
+    scriptsOutput: './js',
+    imagesOutput: './images',
+    fontsOutput: './fonts'
 };
 
-/* Tasks */
-gulp.task('styles', function() {
-    return sass(paths.styles,{ style: 'expanded' })
-        .pipe(gulp.dest(paths.stylesOutput))
-        .pipe(rename({suffix: '.min'}))
-        .pipe(minifycss())
-        .pipe(gulp.dest(paths.stylesOutput))
-        .pipe(notify({ message: 'Styles task complete' }));
-});
+gulp.task( 'sass', function() {
+    return gulp.src( paths.styles, {
+        style: 'expanded'
+    } )
+    .pipe( plumber( { errorHandler: onError } ) )
+    .pipe( sass() )
+    .pipe( prefixer ( {browsers:['last 2 versions'] } ) )
+    .pipe( gulp.dest( paths.stylesOutput ) )
+    .pipe( minifycss() )
+    .pipe( rename( { suffix: '.min' } ) )
+    .pipe( gulp.dest( paths.stylesOutput ) )
+    .pipe( notify( { message: 'Styles task complete' } ) )
+} );
 
 gulp.task('scripts', function() {
-    return gulp.src(paths.scripts)
-        .pipe(jshint('.jshintrc'))
-        .pipe(jshint.reporter('default'))
-        .pipe(concat('main.js'))
-        .pipe(gulp.dest(paths.scriptsOutput))
-        .pipe(rename({suffix: '.min'}))
-        .pipe(uglify())
-        .pipe(gulp.dest(paths.scriptsOutput))
-        .pipe(notify({ message: 'Scripts task complete' }));
+  return gulp.src( paths.scripts )
+    .pipe( sourcemaps.init() )
+    .pipe( gp_concat( 'main.js' ) )
+    .pipe( gulp.dest( paths.scriptsOutput ) )
+    .pipe( rename( { suffix: '.min' } ) )
+    .pipe( uglify() )
+    .pipe( sourcemaps.write( './' ) )
+    .pipe( gulp.dest( paths.scriptsOutput ) )
+    .pipe( notify( { message: 'Scripts task complete' } ) )
 });
 
-gulp.task('images', function() {
-    return gulp.src(paths.images)
-        .pipe(cache(imagemin({ optimizationLevel: 5, progressive: true, interlaced: true })))
-        .pipe(gulp.dest(paths.imagesOutput))
-        .pipe(notify({ message: 'Images task complete' }));
+gulp.task('images', function () {
+    return gulp.src( paths.images )
+        .pipe(imagemin({
+            progressive: true,
+            svgoPlugins: [{removeViewBox: false}],
+            use: [pngquant()]
+        }))
+        .pipe(gulp.dest( paths.imagesOutput ));
 });
 
-gulp.task('fonts', function() {
-    return gulp.src(paths.fonts)
-    .pipe(gulp.dest(paths.fontsOutput))
-    .pipe(notify({ message: 'Fonts task complete', onLast: true }));
-});
+gulp.task( 'watch', function() {
+    gulp.watch( paths.styles, [ 'sass' ] );
+    gulp.watch( paths.scripts, [ 'scripts' ] );
+    gulp.watch( paths.images, [ 'images' ] );
 
-gulp.task('clean', function(cb) {
-    del([paths.stylesOutput, paths.scriptsOutput, paths.imagesOutput, paths.fontsOutput], cb)
-});
+} );
 
-gulp.task('default', ['clean'], function() {
-    gulp.start('styles', 'scripts', 'images', 'fonts');
-});
+gulp.task( 'default', [ 'sass', 'scripts', 'images', 'watch' ], function() {} );

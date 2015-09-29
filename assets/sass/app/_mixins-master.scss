@@ -1,0 +1,129 @@
+// Rem output with px fallback
+@mixin font-size($sizeValue: 1) {
+	font-size: ($sizeValue * 16) * 1px;
+	font-size: $sizeValue * 1rem;
+}
+
+// Center block
+@mixin center-block {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+// Clearfix
+@mixin clearfix() {
+	content: "";
+	display: table;
+}
+
+// Clear after (not all clearfix need this also)
+@mixin clearfix-after() {
+	clear: both;
+}
+
+// RWD BREAKPOINTS 
+// mobile first! so you only have to use floats etc in larger sizes
+// set breakpoints where your content breaks, not particular devices
+
+$xs: 768px; //Extra Small Phones
+$sm: 769px; //Small Devices Tablets and Up
+$md: 992px; //Medium Devices  Desktops and Up
+$lg: 1200px; //Large Devices Large Desktops and Up
+
+@mixin breakpoint($point) {
+  @if $point == xs {
+    @media screen and (max-width: 768px)  { @content; } 
+  }
+  @if $point == sm {
+    @media screen and (min-width: 769px) { @content; }
+  }
+  @if $point == md {
+    @media screen and (min-width: 992px) { @content; }
+  }
+  @else if $point == lg {
+    @media screen and (min-width: 1200px) { @content; }
+  }
+}
+
+@mixin columns($extend: true, $cols: 4, $size: sm) {
+  @if $extend {
+    @extend %columns;
+  }
+  @else {
+    // Mixin core
+
+  }
+}
+
+%columns {
+  @include columns($extend: false);
+}
+
+// @mixin make-column($lg, $md, $sm, $xs: 16) {
+//   .make-xs-column($xs);
+//   .make-sm-column($sm);
+//   .make-md-column($md);
+//   .make-lg-column($lg);
+// }
+
+
+// Extends
+%fake-browser-ui {
+  .frame {
+    display: block;
+    height: 15px;
+    position: absolute;
+    top: 5px;
+    left: 1px;
+  }
+  
+  span {
+    height: 8px;
+    width: 8px;
+    border-radius: 8px;
+    background-color: #eee;
+    border: 1px solid #dadada;
+    float: left;
+    margin: 0 0 0 4px;
+  }
+}
+
+%header {
+  font-family: $font__header;
+  color: $white;
+  text-shadow: 1px 1px 1px $black;
+  text-shadow: -1px -1px -1px $primary-light;
+}
+
+// CLEARFIX
+// for old markup w/clearfix class:
+.clearfix:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+// for semantic markup, a la http://blog.teamtreehouse.com/a-better-clearfix-with-sass
+%clearfix {
+  &:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+}
+
+%text-background {
+    padding: 10px;
+    background: transparentize($primary-dark, .7);
+}
+
+%grow {
+  transition: all .2s;
+
+  &:hover,
+  &:focus {
+    transform: scale(1.1);
+    @extend %box-shadow;
+  }
+}
