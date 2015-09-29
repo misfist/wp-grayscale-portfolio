@@ -1,15 +1,23 @@
 {
-  "name": "grayscale-sass",
-  "version": "0.0.0",
+  "name": "grayscale_portfolio",
+  "version": "1.0.0",
+  "homepage": "https://github.com/misfist/grayscale-portfolio",
   "authors": [
-    "blackfyre <gnick666@gmail.com>"
+    "Pea <pea@misfist.com>"
   ],
-  "license": "Apache 2.0",
-  "private": true,
+  "description": "Custom single-page portfolio theme built with Bootstrap underscores.",
+  "main": "index.php",
+  "keywords": [
+    "wordpress",
+    "portfolio",
+    "theme"
+  ],
+  "license": "GPLv3",
   "ignore": [
     "**/.*",
     "node_modules",
     "bower_components",
+    "assets/vendor",
     "test",
     "tests"
   ],
